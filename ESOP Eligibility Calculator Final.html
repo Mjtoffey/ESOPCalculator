@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ESOP Eligibility Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 10px;
+      background: #f9f9f9;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      margin-top: 15px;
+      display: block;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e0f7fa;
+      border: 1px solid #4dd0e1;
+      border-radius: 5px;
+    }
+    .requirements {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>ESOP Eligibility Calculator</h2>
+
+  <div class="requirements">
+    <strong>Wondering if you're eligible?</strong><br>
+    To join the ESOP, you just need to be with the company for a full year and work at least 1000 hours during that time.
+  </div>
+
+  <label for="hireDate">Hire Date:</label>
+  <input type="date" id="hireDate" required>
+
+  <label for="fullTime">Are you a full-time employee?</label>
+  <select id="fullTime" onchange="toggleHoursField()" required>
+    <option value="">Select an option</option>
+    <option value="yes">Yes</option>
+    <option value="no">No</option>
+  </select>
+
+  <label for="hoursWorked">Hours Worked in the First Year:</label>
+  <input type="number" id="hoursWorked" min="0" required>
+
+  <button onclick="checkEligibility()">Check Eligibility</button>
+
+  <div id="result" class="result" style="display: none;"></div>
+
+  <script>
+    function toggleHoursField() {
+      const fullTime = document.getElementById('fullTime').value;
+      const hoursField = document.getElementById('hoursWorked');
+      const hoursLabel = document.querySelector('label[for="hoursWorked"]');
+
+      if (fullTime === 'yes') {
+        hoursField.required = false;
+        hoursField.style.display = 'none';
+        hoursLabel.style.display = 'none';
+      } else {
+        hoursField.required = true;
+        hoursField.style.display = 'block';
+        hoursLabel.style.display = 'block';
+      }
+    }
+
+    function checkEligibility() {
+      const hireDateInput = document.getElementById('hireDate').value;
+      const fullTime = document.getElementById('fullTime').value;
+      const hoursField = document.getElementById('hoursWorked');
+      const hoursWorked = fullTime === 'yes' ? 1000 : parseInt(hoursField.value, 10);
+      const result = document.getElementById('result');
+
+      if (!hireDateInput || isNaN(hoursWorked)) {
+        result.style.display = 'block';
+        result.innerHTML = 'Please enter a valid hire date and number of hours worked.';
+        return;
+      }
+
+      const hireDate = new Date(hireDateInput);
+      const oneYearLater = new Date(hireDate);
+      oneYearLater.setFullYear(hireDate.getFullYear() + 1);
+
+      if (hoursWorked < 1000) {
+        result.style.display = 'block';
+        result.innerHTML = '❌ You are not eligible. You must work at least 1000 hours in your first year.';
+        return;
+      }
+
+      const year = oneYearLater.getFullYear();
+      const jan1 = new Date(year, 0, 1);
+      const jul1 = new Date(year, 6, 1);
+      let entryDate;
+
+      if (oneYearLater <= jan1) {
+        entryDate = jan1;
+      } else if (oneYearLater <= jul1) {
+        entryDate = jul1;
+      } else {
+        entryDate = new Date(year + 1, 0, 1);
+      }
+
+      const statementDate = new Date(entryDate.getFullYear() + 1, 6, 1);
+
+      const entryMonthYear = entryDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+      const statementMonthYear = statementDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+
+      result.style.display = 'block';
+      result.innerHTML = `
+        ✅ You are eligible to enter the ESOP.<br>
+        📅 Entry Date: <strong>${entryMonthYear}</strong><br>
+        🗂️ Statement Available: <strong>${statementMonthYear}</strong>
+      `;
+    }
+  </script>
+
+</body>
+</html>
